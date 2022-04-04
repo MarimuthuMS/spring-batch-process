@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -139,10 +141,11 @@ class SpringbatchApplicationTests {
     
     @Test
     @DisplayName("Test save Employee")
-    void testEmployeeSave() {
-    	Date date = new Date(0);  
+    void testEmployeeSave() throws Exception {
+ 
+        Date configDate = new Date(0);
         // Setup our mock repository
-     	Employee employee1=new Employee(12345, "Raj",date,90.0,"4536643");
+     	Employee employee1=new Employee(12345, "Raj",configDate,90.0,"4536643");
         doReturn(employee1).when(employeeRepository).save(any());
 
         // Execute the service call
@@ -159,7 +162,7 @@ class SpringbatchApplicationTests {
     public void givenMockedStep_whenReaderCalled_thenSuccess() throws Exception {
         // given
         ExecutionContext ctx = new ExecutionContext();
-        ctx.put("fileName", "input/*.csv");
+        ctx.put("fileName", "input/employee1.csv");
         StepExecution stepExecution = MetaDataInstanceFactory.createStepExecution(ctx);
 
         // when
@@ -200,8 +203,36 @@ class SpringbatchApplicationTests {
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
         // when
-        
-
        
+    }
+    @Test
+    public void checkHighPerformer() throws Exception {
+    Date configDate = new Date(0);
+    boolean isHighPerformer=true;
+ 	Employee employee1=new Employee(12345, "Raj",configDate,90.0,"4536643");
+	  if(employee1!=null && employee1.getRating() >=90) {
+		  employee1.setHighPerfomer(true);
+     }
+	  Assertions.assertEquals(employee1.isHighPerfomer(), isHighPerformer, "Employee High Performer");
+    }
+    
+    @Test
+    public void checkSeniority() throws Exception {
+ 
+	 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+     @SuppressWarnings("deprecation")
+     java.sql.Date configDate = new java.sql.Date(1994, 01, 01);
+     @SuppressWarnings("deprecation")
+     java.sql.Date configDate1 = new java.sql.Date(1995, 01, 01);
+     boolean seniority=true;
+  	 Employee employee1=new Employee(12345, "Raj",configDate,90.0,"4536643");
+     int result = configDate1.compareTo(employee1.getDob());
+
+
+ 	 if(result > 0) {
+ 		employee1.setSeniorEmployee(true);
+	  }
+   
+	  Assertions.assertEquals(employee1.isSeniorEmployee(), seniority, "Employee Seniority");
     }
 }

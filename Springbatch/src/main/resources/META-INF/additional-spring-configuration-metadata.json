@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "input.files.location",
+    "type": "java.lang.String",
+    "description": "A description for 'input.files.location'"
+  },
+  {
+    "name": "input.file.pattern",
+    "type": "java.lang.String",
+    "description": "A description for 'input.file.pattern'"
+  }
+]}

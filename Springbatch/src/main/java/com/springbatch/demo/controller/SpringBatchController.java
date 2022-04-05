@@ -1,5 +1,7 @@
 package com.springbatch.demo.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
@@ -10,12 +12,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
+
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/load")
 public class SpringBatchController {
+	
+	Logger logger = LoggerFactory.getLogger(SpringBatchController.class);
 
     @Autowired
     JobLauncher jobLauncher;
@@ -33,13 +39,10 @@ public class SpringBatchController {
         JobParameters parameters = new JobParameters(maps);
         JobExecution jobExecution = jobLauncher.run(job, parameters);
 
-        System.out.println("JobExecution: " + jobExecution.getStatus());
-
-        System.out.println("Batch is Running...");
         while (jobExecution.isRunning()) {
-            System.out.println("...");
+       	 logger.info(".........");
         }
-
+   	 	logger.info("jobExecution.getStatus()-->"+jobExecution.getStatus());
         return jobExecution.getStatus();
     }
 }

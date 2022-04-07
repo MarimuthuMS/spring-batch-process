@@ -1,4 +1,4 @@
-package com.springbatch.demo.aop;
+package com.springbatch.process.aop;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 @Component
 public class AspectBatch {
 	Logger logger = LoggerFactory.getLogger(AspectBatch.class);
-	
-	@Pointcut("execution(* com.springbatch.demo.*.*.*(..))")
+	//creating point cut for entire package
+	@Pointcut("execution(* com.springbatch.process.*.*.*(..))")
 	public void loggingMethod() {
 
 	}
@@ -53,7 +53,13 @@ public class AspectBatch {
         logger.info("Class Name: "+ point.getSignature().getDeclaringTypeName() +". Method Name: "+ point.getSignature().getName() + ". Time taken for Execution is : " + (endtime-startTime) +"ms");
         return object;
     }
-	
+	/*
+	 * @Around("loggingMethod()") public Object intercept(ProceedingJoinPoint
+	 * thisJoinPoint, int number) throws Throwable { logger.info(thisJoinPoint +
+	 * " -> " + number); if (number < 0) return thisJoinPoint.proceed(new Object[] {
+	 * -number }); if (number > 99) throw new RuntimeException("oops"); return
+	 * thisJoinPoint.proceed(); }
+	 */
 
     @AfterReturning(pointcut = "loggingMethod()", returning = "result")
     public void logAfter(JoinPoint joinPoint, Object result) {

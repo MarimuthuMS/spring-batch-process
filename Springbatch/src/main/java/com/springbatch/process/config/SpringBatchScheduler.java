@@ -1,4 +1,4 @@
-package com.springbatch.demo.batchscheduler;
+package com.springbatch.process.config;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -30,15 +30,18 @@ public class SpringBatchScheduler {
     @Autowired
     Job job;
 
-	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-
+	SimpleDateFormat format = new SimpleDateFormat(SpringBatchConstant.SPRING_DATE_FORMAT);
+    // cron job runs each and every one minutes
 	@Scheduled(cron = "0 */1 * * * ?")
 	public void scheduleByFixedRate() throws Exception {
+		try {
 		 logger.info("Batch job starting");
-		
 		JobParameters jobParameters = new JobParametersBuilder()
 				.addString("time", format.format(Calendar.getInstance().getTime())).toJobParameters();
 		jobLauncher.run(job, jobParameters);
 		 logger.info("Batch job executed successfully\n");
+		}catch(Exception ex) {
+			logger.error("Cause : " + ex.getCause());
+		}
 	}
 }

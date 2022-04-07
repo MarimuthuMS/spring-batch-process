@@ -1,8 +1,8 @@
-package com.springbatch.demo.repository;
+package com.springbatch.process.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.springbatch.demo.model.Employee;
+import com.springbatch.process.model.Employee;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Integer>{
 

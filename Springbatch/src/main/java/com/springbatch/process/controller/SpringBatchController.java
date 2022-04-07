@@ -1,4 +1,4 @@
-package com.springbatch.demo.controller;
+package com.springbatch.process.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +28,12 @@ public class SpringBatchController {
 
     @Autowired
     Job job;
-
+    // Rest end point for calling job manually.
     @GetMapping
     @RequestMapping("/loadJob")
     public BatchStatus load() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
 
-
+        try {
         Map<String, JobParameter> maps = new HashMap<>();
         maps.put("time", new JobParameter(System.currentTimeMillis()));
         JobParameters parameters = new JobParameters(maps);
@@ -44,5 +44,10 @@ public class SpringBatchController {
         }
    	 	logger.info("jobExecution.getStatus()-->"+jobExecution.getStatus());
         return jobExecution.getStatus();
+        }
+        catch(Exception ex) {
+        	logger.error("load job Cause : " + ex.getCause());
+        }
+		return null;
     }
 }

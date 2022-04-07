@@ -1,4 +1,4 @@
-package com.springbatch.demo;
+package com.springbatch.process.junit;
 
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.context.annotation.Bean;

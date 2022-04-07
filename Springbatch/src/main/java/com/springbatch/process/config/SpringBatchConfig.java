@@ -1,6 +1,7 @@
-package com.springbatch.demo.springbatchconfig;
+package com.springbatch.process.config;
 
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Date;
 
@@ -21,7 +22,7 @@ import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -31,8 +32,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
-import com.springbatch.demo.aop.AspectBatch;
-import com.springbatch.demo.model.Employee;
+
+import com.springbatch.process.model.Employee;
+
 
 
 
@@ -40,71 +42,85 @@ import com.springbatch.demo.model.Employee;
 @Configuration
 @EnableBatchProcessing
 public class SpringBatchConfig {
-	
-	
-	
+	Logger logger = LoggerFactory.getLogger(SpringBatchConfig.class);
+	@Value("${input.files.location}")
+	private String csvFileLocation;
+	 // creating job bean
 	 @Bean
 	    public Job job(JobBuilderFactory jobBuilderFactory,
 	                   StepBuilderFactory stepBuilderFactory,
 	                   ItemReader<Employee> itemReader,
 	                   ItemProcessor<Employee, Employee> itemProcessor,
 	                   ItemWriter<Employee> itemWriter
-	    ) {
+	    ) throws Exception {
 
-	        Step step = stepBuilderFactory.get("ETL-file-load")
+	        Step step = stepBuilderFactory.get(SpringBatchConstant.SPRING_ETL_FILE_LOAD)
 	                .<Employee, Employee>chunk(100)
 	                .reader(multiResourceItemreader())
 	                .processor(itemProcessor)
 	                .writer(itemWriter)
-	                .build();
+	                .faultTolerant()
+					.skipLimit(10)
+					.skip(Exception.class)
+					.noSkip(FileNotFoundException.class)
+					.build();
 
 
-	        return jobBuilderFactory.get("ETL-Load")
+
+	        return jobBuilderFactory.get(SpringBatchConstant.SPRING_ETL_LOAD)
 	                .incrementer(new RunIdIncrementer())
 	                .start(step)
 	                .build();
 	    }
-	 
+	  // Multiple CSV Resource file Item Reader
 		@Bean
-		public MultiResourceItemReader<Employee> multiResourceItemreader() {
+		public MultiResourceItemReader<Employee> multiResourceItemreader() throws Exception  {
+			try {
 			MultiResourceItemReader<Employee> reader = new MultiResourceItemReader<>();
 			 Resource[] resources = null;
 			    ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();   
 			    try {
-			        resources = patternResolver.getResources("/input/*.csv");
+			        resources = patternResolver.getResources(csvFileLocation);
 			    } catch (IOException e) {
 			        e.printStackTrace();
 			    }
 			reader.setDelegate(itemReader());
 			reader.setResources(resources);
 			return reader;
+		}catch(Exception ex) {
+    		logger.error("Multi Resource Item reader Cause : " + ex.getCause());
+    	}
+			return null;
 		}
-		
+		// Single Resource file Item Reader and also skipping first line header
 	    @Bean
-	    public FlatFileItemReader<Employee> itemReader() {
-	    	   
+	    public FlatFileItemReader<Employee> itemReader() throws Exception  {
+	    	try {   
 	        FlatFileItemReader<Employee> flatFileItemReader = new FlatFileItemReader<>();
-	       // flatFileItemReader.setResource(new ClassPathResource("input/employee1.csv"));
-	        flatFileItemReader.setName("CSV-Reader");
+	        flatFileItemReader.setName(SpringBatchConstant.SPRING_CSV_READER);
 	        flatFileItemReader.setLinesToSkip(1);
 	        flatFileItemReader.setLineMapper(lineMapper());
 	        return flatFileItemReader;
+	    	}catch(Exception ex) {
+	    		logger.error("Item reader Cause : " + ex.getCause());
+	    	}
+			return null;
 	    }
-
+	    // CSV files field and object field mapping with date conversion
 	    @Bean
-	    public LineMapper<Employee> lineMapper() {
-
+	    public LineMapper<Employee> lineMapper() throws Exception  {
+	    	try {
 	        DefaultLineMapper<Employee> defaultLineMapper = new DefaultLineMapper<>();
 	        DelimitedLineTokenizer lineTokenizer = new DelimitedLineTokenizer();
 
-	        lineTokenizer.setDelimiter(",");
+	        lineTokenizer.setDelimiter(SpringBatchConstant.SPRING_DELIMITER);
 	        lineTokenizer.setStrict(false);
-	        lineTokenizer.setNames("empId", "name", "dob", "rating");
+	        lineTokenizer.setNames(SpringBatchConstant.SPRING_FIELD_ONE, SpringBatchConstant.SPRING_FIELD_TWO, SpringBatchConstant.SPRING_FIELD_THREE, SpringBatchConstant.SPRING_FIELD_FOUR);
 
 	        BeanWrapperFieldSetMapper<Employee> fieldSetMapper = new BeanWrapperFieldSetMapper<Employee>();
 	        fieldSetMapper.setTargetType(Employee.class);
 	        DefaultConversionService conversionService = new DefaultConversionService();
-    	    conversionService.addConverter(new Converter<String, Date>() { // java.sql.Date
+    	    conversionService.addConverter(new Converter<String, Date>() { 
     	        @Override
     	        public Date convert(String s) {
     	            return Date.valueOf(s);
@@ -114,10 +130,9 @@ public class SpringBatchConfig {
 	        defaultLineMapper.setFieldSetMapper(fieldSetMapper);
 	        defaultLineMapper.setLineTokenizer(lineTokenizer);
 	        return defaultLineMapper;
+	        }catch(Exception ex) {
+	    		logger.error("line Mapper Cause : " + ex.getCause());
+	    	}
+			return null;
 	    }
-	
-	
-	
-	
-
 }

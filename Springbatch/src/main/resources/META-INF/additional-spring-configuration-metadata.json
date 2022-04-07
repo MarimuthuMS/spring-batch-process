@@ -8,5 +8,20 @@
     "name": "input.file.pattern",
     "type": "java.lang.String",
     "description": "A description for 'input.file.pattern'"
+  },
+  {
+    "name": "input.type.date",
+    "type": "java.lang.String",
+    "description": "A description for 'input.type.date'"
+  },
+  {
+    "name": "input.seniority.date",
+    "type": "java.lang.String",
+    "description": "A description for 'input.seniority.date'"
+  },
+  {
+    "name": "input.perfomer.rating",
+    "type": "java.lang.String",
+    "description": "A description for 'input.perfomer.rating'"
   }
 ]}

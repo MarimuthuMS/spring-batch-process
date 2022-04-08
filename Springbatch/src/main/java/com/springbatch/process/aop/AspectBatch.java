@@ -18,7 +18,8 @@ import org.slf4j.LoggerFactory;
 @Component
 public class AspectBatch {
 	Logger logger = LoggerFactory.getLogger(AspectBatch.class);
-	//creating point cut for entire package
+
+	// creating point cut for entire package
 	@Pointcut("execution(* com.springbatch.process.*.*.*(..))")
 	public void loggingMethod() {
 
@@ -26,63 +27,76 @@ public class AspectBatch {
 
 	@Before("loggingMethod()")
 	public void beforeEvent(JoinPoint joinPoint) throws Throwable {
-		 logger.info("Process Started Method Name....."+joinPoint.getSignature());
-		 logger.info("Process Started  Class Name....."+joinPoint.getTarget().getClass());
-		 Object[] array =joinPoint.getArgs();
-		 logger.info("Process Started Arguments....."+array.toString());
-
+		try {
+			logger.info("Process Started Method Name....." + joinPoint.getSignature());
+			logger.info("Process Started  Class Name....." + joinPoint.getTarget().getClass());
+			Object[] array = joinPoint.getArgs();
+			logger.info("Process Started Arguments....." + array.toString());
+		} catch (Exception ex) {
+			logger.error("Cause : " + ex.getCause());
+		}
 	}
-	
+
 	@After("loggingMethod()")
 	public void AfterEvent(JoinPoint joinPoint) throws Throwable {
+		try {
+			Logger logger = LoggerFactory.getLogger(AspectBatch.class);
 
-		Logger logger = LoggerFactory.getLogger(AspectBatch.class);
-		
-		 logger.info("Process Ended Method Name....."+joinPoint.getSignature());
-		 logger.info("Process Ended Class Name....."+joinPoint.getTarget().getClass());
-		 Object[] array =joinPoint.getArgs();
-		 logger.info("Process Ended Arguments....."+array.toString());		
-
+			logger.info("Process Ended Method Name....." + joinPoint.getSignature());
+			logger.info("Process Ended Class Name....." + joinPoint.getTarget().getClass());
+			Object[] array = joinPoint.getArgs();
+			logger.info("Process Ended Arguments....." + array.toString());
+		} catch (Exception ex) {
+			logger.error("Cause : " + ex.getCause());
+		}
 	}
-	
-	@Around("loggingMethod()")
-    public Object executionTime(ProceedingJoinPoint point) throws Throwable {
-        long startTime = System.currentTimeMillis();
-        Object object = point.proceed();
-        long endtime = System.currentTimeMillis();
-        logger.info("Class Name: "+ point.getSignature().getDeclaringTypeName() +". Method Name: "+ point.getSignature().getName() + ". Time taken for Execution is : " + (endtime-startTime) +"ms");
-        return object;
-    }
-	/*
-	 * @Around("loggingMethod()") public Object intercept(ProceedingJoinPoint
-	 * thisJoinPoint, int number) throws Throwable { logger.info(thisJoinPoint +
-	 * " -> " + number); if (number < 0) return thisJoinPoint.proceed(new Object[] {
-	 * -number }); if (number > 99) throw new RuntimeException("oops"); return
-	 * thisJoinPoint.proceed(); }
-	 */
 
-    @AfterReturning(pointcut = "loggingMethod()", returning = "result")
-    public void logAfter(JoinPoint joinPoint, Object result) {
-        String returnValue = this.getValue(result);
-        logger.debug("Method Return value : " + returnValue);
-    }
-   
-    @AfterThrowing(pointcut = "loggingMethod()", throwing = "exception")
-    public void logAfterThrowing(JoinPoint joinPoint, Throwable exception) {
-    	logger.error("An exception has been thrown in " + joinPoint.getSignature().getName() + " ()");
-    	logger.error("Cause : " + exception.getCause());
-    }
-    
-    private String getValue(Object result) {
-        String returnValue = null;
-        if (null != result) {
-            if (result.toString().endsWith("@" + Integer.toHexString(result.hashCode()))) {
-                returnValue = result.toString();
-            } else {
-                returnValue = result.toString();
-            }
-        }
-        return returnValue;
-    }
+	@Around("loggingMethod()")
+	public Object executionTime(ProceedingJoinPoint point) throws Throwable {
+		try {
+			long startTime = System.currentTimeMillis();
+			Object object = point.proceed();
+			long endtime = System.currentTimeMillis();
+			logger.info("Class Name: " + point.getSignature().getDeclaringTypeName() + ". Method Name: "
+					+ point.getSignature().getName() + ". Time taken for Execution is : " + (endtime - startTime)
+					+ "ms");
+			return object;
+		} catch (Exception ex) {
+			logger.error("Cause : " + ex.getCause());
+		}
+		return null;
+	}
+
+	@AfterReturning(pointcut = "loggingMethod()", returning = "result")
+	public void logAfter(JoinPoint joinPoint, Object result) {
+		try {
+			String returnValue = this.getValue(result);
+			logger.debug("Method Return value : " + returnValue);
+		} catch (Exception ex) {
+			logger.error("Cause : " + ex.getCause());
+		}
+	}
+
+	@AfterThrowing(pointcut = "loggingMethod()", throwing = "exception")
+	public void logAfterThrowing(JoinPoint joinPoint, Throwable exception) {
+		try {
+			logger.error("An exception has been thrown in " + joinPoint.getSignature().getName() + " ()");
+			logger.error("Cause : " + exception.getCause());
+		} catch (Exception ex) {
+			logger.error("Cause : " + ex.getCause());
+		}
+	}
+
+	private String getValue(Object result) {
+		String returnValue = null;
+		if (null != result) {
+			if (result.toString().endsWith("@" + Integer.toHexString(result.hashCode()))) {
+				returnValue = result.toString();
+			} else {
+				returnValue = result.toString();
+			}
+		}
+		return returnValue;
+	}
 
 }
